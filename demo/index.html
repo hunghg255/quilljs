@@ -1,73 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <!-- <link rel="stylesheet" href="http://192.168.1.154:9080/quill.snow.css" /> -->
+    <link rel="stylesheet" href="./js/quill.snow.css" />
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
-  <!-- <link rel="stylesheet" href="http://192.168.1.154:9080/quill.snow.css" /> -->
-  <link rel="stylesheet" href="./js/quill.snow.css" />
+    <style>
+      .ql-snow .ql-picker.ql-size .ql-picker-label::before {
+        content: attr(data-value) !important;
+      }
 
+      .ql-snow .ql-picker.ql-size .ql-picker-item::before {
+        content: attr(data-value) !important;
+      }
+    </style>
+  </head>
 
-</head>
+  <body>
+    <!-- Create the toolbar container -->
+    <div id="toolbar"></div>
 
-<body>
-  <!-- Create the toolbar container -->
-  <div id="toolbar"></div>
+    <!-- Create the editor container -->
+    <div id="editor">
+      <!-- <p>Hello World!</p> -->
+    </div>
+    <button id="insert-table">Insert Table</button>
+    <button id="btnGetHtml">Get HTML</button>
 
-  <!-- Create the editor container -->
-  <div id="editor">
-    <!-- <p>Hello World!</p> -->
-  </div>
-  <button id="insert-table">Insert Table</button>
+    <!-- <script src="http://192.168.1.154:9080/quill.js"></script> -->
+    <script src="./js/quill.js"></script>
 
-  <!-- <script src="http://192.168.1.154:9080/quill.js"></script> -->
-  <script src="./js/quill.js"></script>
+    <!-- https://github.com/scrapooo/quill-resize-module -->
+    <script src="./image-resize.min.js"></script>
+    <script>
+      const toBase64 = file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = error => reject(error);
+        });
+      };
 
-  <!-- https://github.com/scrapooo/quill-resize-module -->
-  <script src="./image-resize.min.js"></script>
-  <script>
-    var toolbarOptions = [
-      ['bold', 'italic', 'underline', 'strike'], // toggled buttons
-      ['blockquote', 'code-block'],
+      const imageHandler = () => {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.click();
 
-      [{ header: 1 }, { header: 2 }], // custom button values
-      [{ list: 'ordered' }, { list: 'bullet' }],
-      [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
-      [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
-      [{ direction: 'rtl' }], // text direction
+        input.onchange = async () => {
+          const file = input.files[0];
+          const base64 = await toBase64(file);
 
-      [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
-      [{ header: [1, 2, 3, 4, 5, 6, false] }],
-      ['link', 'image', 'video', 'formula'],
-      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
-      [{ font: [] }],
-      [{ align: [] }],
+          // call api upload image here
+          if (base64) {
+            insertToEditor(base64);
+          } else {
+            console.warn('You could only upload images.');
+          }
+        };
+      };
 
-      ['clean'], // remove formatting button
-    ];
-    Quill.register("modules/resize", window.QuillResizeModule);
+      function insertToEditor(url) {
+        const range = snow.getSelection();
 
-    let snow = new Quill('#editor', {
-      modules: {
-        toolbar: toolbarOptions,
-        table: true,
-        resize: {
-          locale: {},
+        snow.editor.insertEmbed(range.index, 'image', url);
+      }
+
+      const fontSizeArr = [
+        '8px',
+        '9px',
+        '10px',
+        '12px',
+        '14px',
+        '16px',
+        '20px',
+        '24px',
+        '32px',
+        '42px',
+        '54px',
+        '68px',
+        '84px',
+        '98px',
+      ];
+
+      var Size = Quill.import('attributors/style/size');
+      Size.whitelist = fontSizeArr;
+      Quill.register(Size, true);
+
+      var toolbarOptions = {
+        container: [
+          ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+          ['blockquote', 'code-block'],
+
+          [{ header: 1 }, { header: 2 }], // custom button values
+          [{ size: fontSizeArr }],
+
+          [{ list: 'ordered' }, { list: 'bullet' }],
+          [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+          [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+          [{ direction: 'rtl' }], // text direction
+
+          [{ header: [1, 2, 3, 4, 5, 6, false] }],
+          ['link', 'image', 'video', 'formula'],
+          [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+          [{ font: [] }],
+          [{ align: [] }],
+
+          ['clean'], // remove formatting button
+        ],
+        handlers: {
+          image: imageHandler,
         },
-      },
-      placeholder: 'Compose an epic...',
-      theme: 'snow', // or 'bubble'
-    });
-    const table = snow.getModule('table');
-    document
-      .querySelector('#insert-table')
-      .addEventListener('click', function () {
-        table.insertTable(2, 2);
+      };
+      Quill.register('modules/resize', window.QuillResizeModule);
+
+      var snow = new Quill('#editor', {
+        modules: {
+          toolbar: toolbarOptions,
+          table: true,
+          resize: {
+            locale: {},
+          },
+        },
+        placeholder: 'Compose an epic...',
+        theme: 'snow', // or 'bubble'
       });
+      const table = snow.getModule('table');
 
-  </script>
-</body>
+      const htmlMurkup = `<h1>New content here</h1><p><strong>Hello</strong></p>`;
+      snow.root.innerHTML = htmlMurkup;
 
+      document
+        .querySelector('#insert-table')
+        .addEventListener('click', function () {
+          table.insertTable(2, 2);
+        });
+      document
+        .querySelector('#btnGetHtml')
+        .addEventListener('click', function () {
+          console.log(snow.container.firstChild.innerHTML);
+        });
+    </script>
+  </body>
 </html>
