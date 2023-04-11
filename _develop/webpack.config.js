@@ -129,6 +129,10 @@ const baseConfig = {
     devMiddleware: {
       stats: 'minimal',
     },
+    compress: true,
+  },
+  optimization: {
+    minimize: true,
   },
 };
 

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <!-- <link rel="stylesheet" href="http://192.168.1.154:9080/quill.snow.css" /> -->
+  <link rel="stylesheet" href="../dist/quill.snow.css" />
+
+
+</head>
+
+<body>
+  <!-- Create the toolbar container -->
+  <div id="toolbar"></div>
+
+  <!-- Create the editor container -->
+  <div id="editor">
+    <!-- <p>Hello World!</p> -->
+  </div>
+  <button id="insert-table">Insert Table</button>
+
+  <!-- <script src="http://192.168.1.154:9080/quill.js"></script> -->
+  <script src="../dist/quill.js"></script>
+
+  <!-- https://github.com/scrapooo/quill-resize-module -->
+  <script src="./image-resize.min.js"></script>
+  <script>
+    var toolbarOptions = [
+      ['bold', 'italic', 'underline', 'strike'], // toggled buttons
+      ['blockquote', 'code-block'],
+
+      [{ header: 1 }, { header: 2 }], // custom button values
+      [{ list: 'ordered' }, { list: 'bullet' }],
+      [{ script: 'sub' }, { script: 'super' }], // superscript/subscript
+      [{ indent: '-1' }, { indent: '+1' }], // outdent/indent
+      [{ direction: 'rtl' }], // text direction
+
+      [{ size: ['small', false, 'large', 'huge'] }], // custom dropdown
+      [{ header: [1, 2, 3, 4, 5, 6, false] }],
+      ['link', 'image', 'video', 'formula'],
+      [{ color: [] }, { background: [] }], // dropdown with defaults from theme
+      [{ font: [] }],
+      [{ align: [] }],
+
+      ['clean'], // remove formatting button
+    ];
+    Quill.register("modules/resize", window.QuillResizeModule);
+
+    let snow = new Quill('#editor', {
+      modules: {
+        toolbar: toolbarOptions,
+        table: true,
+        resize: {
+          locale: {},
+        },
+      },
+      placeholder: 'Compose an epic...',
+      theme: 'snow', // or 'bubble'
+    });
+    const table = snow.getModule('table');
+    document
+      .querySelector('#insert-table')
+      .addEventListener('click', function () {
+        table.insertTable(2, 2);
+      });
+
+  </script>
+</body>
+
+</html>
